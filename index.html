@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>澄时 · 情绪日记 Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #0f2e2b;
+      --bg-mid: #1a4a44;
+      --mist: #dceae4;
+      --foam: #f3f8f5;
+      --ink: #142422;
+      --ink-soft: #4a635e;
+      --line: rgba(20, 36, 34, 0.1);
+      --accent: #2f7a6d;
+      --accent-soft: #a8d4c8;
+      --warm: #c4785a;
+      --calm: #5b8fbf;
+      --low: #7a8aa0;
+      --joy: #d4a017;
+      --phone-w: 390px;
+      --phone-h: 844px;
+      --radius: 18px;
+      --shadow: 0 24px 60px rgba(15, 46, 43, 0.28);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "Noto Sans SC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(168, 212, 200, 0.45), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 90% 80%, rgba(196, 120, 90, 0.22), transparent 50%),
+        linear-gradient(145deg, #1a4a44 0%, #0f2e2b 45%, #243d4a 100%);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px 40px;
+      overflow-x: hidden;
+    }
+
+    .stage {
+      width: min(1100px, 100%);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .intro {
+      color: #e8f3ef;
+      max-width: 420px;
+      animation: rise 0.8s ease both;
+    }
+    .intro .brand {
+      font-family: "Noto Serif SC", serif;
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.15;
+    }
+    .intro .brand span {
+      display: block;
+      font-size: 15px;
+      font-family: "Noto Sans SC", sans-serif;
+      font-weight: 400;
+      opacity: 0.72;
+      letter-spacing: 0.18em;
+      margin-top: 10px;
+      text-transform: uppercase;
+    }
+    .intro p {
+      margin-top: 20px;
+      line-height: 1.7;
+      color: rgba(232, 243, 239, 0.82);
+      font-size: 15px;
+    }
+    .intro ul {
+      margin-top: 22px;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+    .intro li {
+      font-size: 13px;
+      color: rgba(232, 243, 239, 0.78);
+      padding-left: 18px;
+      position: relative;
+    }
+    .intro li::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 7px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+    }
+    .hint {
+      margin-top: 28px;
+      font-size: 12px;
+      color: rgba(232, 243, 239, 0.55);
+    }
+
+    .phone-shell {
+      width: var(--phone-w);
+      height: var(--phone-h);
+      border-radius: 42px;
+      padding: 12px;
+      background: linear-gradient(160deg, #2a5550, #163632);
+      box-shadow: var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.12);
+      position: relative;
+      animation: rise 0.9s 0.1s ease both;
+    }
+    .phone-shell::before {
+      content: "";
+      position: absolute;
+      top: 18px; left: 50%;
+      transform: translateX(-50%);
+      width: 108px; height: 28px;
+      background: #0b1f1d;
+      border-radius: 20px;
+      z-index: 5;
+    }
+    .phone {
+      width: 100%;
+      height: 100%;
+      border-radius: 32px;
+      overflow: hidden;
+      background: var(--foam);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .status-bar {
+      height: 48px;
+      padding: 18px 22px 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      flex-shrink: 0;
+    }
+
+    .app-body {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .tab-panel {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 8px 18px 100px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+    .tab-panel.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+    }
+
+    .page-title {
+      font-family: "Noto Serif SC", serif;
+      font-size: 26px;
+      font-weight: 600;
+      margin: 4px 0 4px;
+    }
+    .page-sub {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-bottom: 18px;
+    }
+
+    .record-hero {
+      background:
+        linear-gradient(145deg, rgba(47, 122, 109, 0.92), rgba(36, 90, 110, 0.88)),
+        radial-gradient(circle at 85% 20%, rgba(255,255,255,0.25), transparent 45%);
+      color: #f5fbf8;
+      border-radius: 24px;
+      padding: 22px 20px 20px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .record-hero::after {
+      content: "";
+      position: absolute;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      right: -40px; bottom: -50px;
+      background: rgba(255,255,255,0.08);
+    }
+    .record-hero h2 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 22px;
+      font-weight: 600;
+      position: relative;
+      z-index: 1;
+    }
+    .record-hero p {
+      margin-top: 6px;
+      font-size: 13px;
+      opacity: 0.85;
+      position: relative;
+      z-index: 1;
+    }
+    .btn-primary {
+      margin-top: 16px;
+      border: none;
+      background: #f5fbf8;
+      color: var(--bg-deep);
+      font: inherit;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-ghost {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .btn-ghost.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .btn-soft {
+      border: none;
+      background: rgba(47, 122, 109, 0.12);
+      color: var(--accent);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .btn-danger-soft {
+      border: none;
+      background: rgba(196, 120, 90, 0.12);
+      color: var(--warm);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 8px 0 12px;
+    }
+    .section-head h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .segment {
+      display: flex;
+      gap: 6px;
+      background: rgba(20, 36, 34, 0.05);
+      padding: 4px;
+      border-radius: 999px;
+    }
+
+    .chart-wrap {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 12px 10px;
+      margin-bottom: 14px;
+    }
+    .chart-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-bottom: 8px;
+    }
+    .chart-meta strong {
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 700;
+      display: block;
+      margin-top: 2px;
+    }
+    canvas#moodChart {
+      width: 100%;
+      height: 160px;
+      display: block;
+    }
+
+    .recent-list { display: grid; gap: 8px; }
+    .mood-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      animation: pop 0.35s ease;
+    }
+    .mood-emoji {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      background: var(--mist);
+    }
+    .mood-item .info { flex: 1; min-width: 0; }
+    .mood-item .info b { font-size: 14px; display: block; }
+    .mood-item .info span { font-size: 12px; color: var(--ink-soft); }
+    .intensity-dots { display: flex; gap: 3px; }
+    .intensity-dots i {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--line);
+    }
+    .intensity-dots i.on { background: var(--accent); }
+
+    .predict-banner {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .predict-banner::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--accent), var(--calm));
+    }
+    .predict-label {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+    }
+    .predict-banner h3 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 18px;
+      margin: 6px 0;
+    }
+    .predict-banner p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+
+    .timeline { display: grid; gap: 12px; position: relative; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 15px; top: 12px; bottom: 12px;
+      width: 2px;
+      background: linear-gradient(180deg, var(--accent-soft), transparent);
+    }
+    .node-card {
+      margin-left: 0;
+      padding-left: 36px;
+      position: relative;
+      animation: rise 0.4s ease both;
+    }
+    .node-card .dot {
+      position: absolute;
+      left: 8px; top: 18px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--accent);
+      z-index: 1;
+    }
+    .node-inner {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .node-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .node-top b { font-size: 14px; display: block; }
+    .node-top .time {
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 2px;
+    }
+    .rec-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(47, 122, 109, 0.1);
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .node-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .add-node-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .add-node-row input, .add-node-row select {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 13px;
+      background: white;
+      outline: none;
+    }
+    .add-node-row input:focus, .add-node-row select:focus {
+      border-color: var(--accent);
+    }
+
+    .insight-grid { display: grid; gap: 12px; }
+    .factor-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .factor-row .name { width: 48px; font-size: 13px; font-weight: 500; }
+    .bar-track {
+      flex: 1;
+      height: 10px;
+      background: rgba(20, 36, 34, 0.06);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+      width: 0;
+      transition: width 0.7s ease;
+    }
+    .factor-row .pct { width: 36px; text-align: right; font-size: 12px; color: var(--ink-soft); }
+
+    .effect-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .effect-item:last-child { border-bottom: none; }
+    .effect-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+    .effect-tag.good { background: rgba(47,122,109,0.12); color: var(--accent); }
+    .effect-tag.mid { background: rgba(212,160,23,0.15); color: #9a7400; }
+    .effect-tag.bad { background: rgba(196,120,90,0.15); color: var(--warm); }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      flex-shrink: 0;
+      border: 1px solid var(--line);
+      background: white;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .filter-chip.active {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+    }
+    .activity-list { display: grid; gap: 10px; }
+    .activity-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .activity-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      background: var(--mist);
+    }
+    .activity-card h4 { font-size: 14px; margin-bottom: 4px; }
+    .activity-card p { font-size: 12px; color: var(--ink-soft); line-height: 1.45; margin-bottom: 10px; }
+    .activity-actions { display: flex; gap: 8px; }
+
+    .tab-bar {
+      position: absolute;
+      left: 12px; right: 12px; bottom: 12px;
+      height: 68px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 6px;
+      z-index: 10;
+      box-shadow: 0 10px 30px rgba(15, 46, 43, 0.1);
+    }
+    .tab-btn {
+      border: none;
+      background: transparent;
+      border-radius: 16px;
+      cursor: pointer;
+      font: inherit;
+      color: var(--ink-soft);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .tab-btn .ico { font-size: 18px; line-height: 1; }
+    .tab-btn .lbl { font-size: 10px; font-weight: 500; }
+    .tab-btn.active {
+      background: rgba(47, 122, 109, 0.12);
+      color: var(--accent);
+    }
+
+    /* Modal */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 46, 43, 0.45);
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .overlay.show { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: var(--foam);
+      border-radius: 24px 24px 0 0;
+      padding: 16px 18px 28px;
+      z-index: 21;
+      transform: translateY(110%);
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      max-height: 86%;
+      overflow-y: auto;
+    }
+    .sheet.show { transform: translateY(0); }
+    .sheet-handle {
+      width: 40px; height: 4px;
+      background: rgba(20,36,34,0.15);
+      border-radius: 999px;
+      margin: 0 auto 14px;
+    }
+    .sheet h3 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+    .emo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .emo-btn {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 14px;
+      padding: 12px 8px;
+      cursor: pointer;
+      font: inherit;
+      text-align: center;
+    }
+    .emo-btn .e { font-size: 22px; display: block; margin-bottom: 4px; }
+    .emo-btn .n { font-size: 12px; color: var(--ink-soft); }
+    .emo-btn.selected {
+      border-color: var(--accent);
+      background: rgba(47,122,109,0.1);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      margin: 4px 0 8px;
+    }
+    .trigger-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .trigger-chip {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .trigger-chip.on {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .range-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .range-row input[type=range] { flex: 1; accent-color: var(--accent); }
+    .note-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+      font-size: 13px;
+      resize: none;
+      min-height: 64px;
+      margin-bottom: 14px;
+      outline: none;
+      background: white;
+    }
+    .sheet-actions { display: flex; gap: 10px; }
+    .sheet-actions button { flex: 1; }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 96px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: white;
+      font-size: 13px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 30;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .session-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, #1a4a44, #0f2e2b);
+      color: #e8f3ef;
+      z-index: 25;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+    }
+    .session-overlay.show { display: flex; animation: rise 0.35s ease; }
+    .breath-circle {
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      border: 2px solid rgba(168,212,200,0.5);
+      display: grid;
+      place-items: center;
+      margin: 24px 0;
+      animation: breathe 4s ease-in-out infinite;
+      background: rgba(168,212,200,0.12);
+    }
+    .breath-circle span { font-family: "Noto Serif SC", serif; font-size: 28px; }
+    .feedback-row { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; justify-content: center; }
+
+    /* Psychologist chat (UI shell only) */
+    .doc-fab {
+      position: absolute;
+      right: 18px;
+      bottom: 92px;
+      z-index: 18;
+      width: 56px;
+      height: 56px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      padding: 0;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35), transparent 45%),
+        linear-gradient(145deg, #3d8f82, #1f5c56);
+      box-shadow:
+        0 10px 28px rgba(15, 46, 43, 0.35),
+        0 0 0 3px rgba(255,255,255,0.55);
+      display: grid;
+      place-items: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .doc-fab:hover { transform: scale(1.04); }
+    .doc-fab:active { transform: scale(0.96); }
+    .doc-fab.open {
+      background: linear-gradient(145deg, #243d4a, #142422);
+      box-shadow: 0 8px 20px rgba(15, 46, 43, 0.3);
+    }
+    .doc-fab-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background:
+        linear-gradient(160deg, #e8f3ef 0%, #c5ddd4 100%);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      position: relative;
+    }
+    .doc-fab .pulse {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid rgba(168, 212, 200, 0.7);
+      animation: docPulse 2.4s ease-out infinite;
+      pointer-events: none;
+    }
+    .doc-fab.open .pulse { display: none; }
+    .doc-fab-close {
+      display: none;
+      color: #e8f3ef;
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 300;
+    }
+    .doc-fab.open .doc-fab-avatar { display: none; }
+    .doc-fab.open .doc-fab-close { display: block; }
+    .doc-badge {
+      position: absolute;
+      top: -2px; right: -2px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #c4785a;
+      border: 2px solid var(--foam);
+    }
+    .doc-fab.open .doc-badge { display: none; }
+
+    .doc-panel {
+      position: absolute;
+      right: 14px;
+      bottom: 158px;
+      width: calc(100% - 28px);
+      max-width: 320px;
+      height: 420px;
+      z-index: 19;
+      border-radius: 22px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, #f7fbf9 0%, #eef5f1 100%);
+      border: 1px solid rgba(20, 36, 34, 0.1);
+      box-shadow: 0 20px 50px rgba(15, 46, 43, 0.28);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(16px) scale(0.96);
+      transform-origin: bottom right;
+      transition: opacity 0.25s ease, transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .doc-panel.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+    }
+    .doc-panel-head {
+      padding: 14px 14px 12px;
+      background:
+        linear-gradient(145deg, rgba(47, 122, 109, 0.95), rgba(36, 90, 110, 0.92));
+      color: #f5fbf8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .doc-panel-head .avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.35);
+    }
+    .doc-panel-head .meta { flex: 1; min-width: 0; }
+    .doc-panel-head .meta b {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .doc-panel-head .meta span {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+    .doc-online {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .doc-online::before {
+      content: "";
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #8fd4b8;
+      box-shadow: 0 0 0 2px rgba(143, 212, 184, 0.35);
+    }
+    .doc-panel-head .mini-close {
+      border: none;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .doc-disclaimer {
+      font-size: 10px;
+      color: var(--ink-soft);
+      padding: 8px 12px;
+      background: rgba(196, 120, 90, 0.08);
+      border-bottom: 1px solid var(--line);
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+    .doc-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .doc-bubble {
+      max-width: 88%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      line-height: 1.55;
+      animation: pop 0.3s ease;
+    }
+    .doc-bubble.bot {
+      align-self: flex-start;
+      background: white;
+      border: 1px solid var(--line);
+      border-bottom-left-radius: 6px;
+      color: var(--ink);
+    }
+    .doc-bubble.user {
+      align-self: flex-end;
+      background: var(--accent);
+      color: #f5fbf8;
+      border-bottom-right-radius: 6px;
+    }
+    .doc-bubble .who {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      opacity: 0.65;
+    }
+    .doc-quick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 12px 10px;
+      flex-shrink: 0;
+    }
+    .doc-quick button {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font: inherit;
+      font-size: 11px;
+      color: var(--ink-soft);
+      cursor: pointer;
+    }
+    .doc-quick button:active {
+      background: rgba(47, 122, 109, 0.1);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    .doc-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,0.7);
+      flex-shrink: 0;
+    }
+    .doc-input-row input {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+      background: white;
+    }
+    .doc-input-row input:focus { border-color: var(--accent); }
+    .doc-input-row button {
+      border: none;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    @keyframes docPulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes pop {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes breathe {
+      0%, 100% { transform: scale(0.92); }
+      50% { transform: scale(1.08); }
+    }
+
+    @media (max-width: 900px) {
+      .stage { grid-template-columns: 1fr; justify-items: center; gap: 24px; }
+      .intro { text-align: center; max-width: 390px; }
+      .intro ul { text-align: left; }
+      .intro .brand { font-size: 34px; }
+    }
+    @media (max-width: 430px) {
+      body { padding: 0; background: var(--foam); display: block; }
+      .intro { display: none; }
+      .phone-shell {
+        width: 100vw; height: 100dvh;
+        border-radius: 0; padding: 0; box-shadow: none;
+      }
+      .phone-shell::before { display: none; }
+      .phone { border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <aside class="intro">
+      <div class="brand">澄时<span>情绪日记 · 可交互预览</span></div>
+      <p>在右侧手机框里点击底部四个 Tab，体验「记录 → 今日关怀 → 洞察 → 活动库」完整闭环。</p>
+      <ul>
+        <li>首页：快速记心情，切换周/月折线</li>
+        <li>My Day：心情预测 + 关键节点推送，可加减</li>
+        <li>洞察：触发因素与调节是否缓解</li>
+        <li>活动库：自选开始，完成后反馈效果</li>
+        <li>右下角：心理医生对话浮层（样式壳）</li>
+      </ul>
+      <p class="hint">纯前端 Demo，数据保存在本页，刷新会重置部分状态。</p>
+    </aside>
+
+    <div class="phone-shell">
+      <div class="phone" id="phone">
+        <div class="status-bar">
+          <span id="clock">9:41</span>
+          <span>●●● 5G</span>
+        </div>
+
+        <div class="app-body">
+          <!-- HOME -->
+          <section class="tab-panel active" data-tab="home" id="panel-home">
+            <div class="page-title">澄时</div>
+            <div class="page-sub">把此刻的情绪轻轻放下</div>
+
+            <div class="record-hero">
+              <h2>此刻感觉如何？</h2>
+              <p>30 秒记录，看见自己的节律</p>
+              <button class="btn-primary" id="openRecord">记录此刻</button>
+            </div>
+
+            <div class="section-head">
+              <h3>情绪趋势</h3>
+              <div class="segment">
+                <button class="btn-ghost active" data-range="week">本周</button>
+                <button class="btn-ghost" data-range="month">本月</button>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <div class="chart-meta">
+                <div>平均心情<strong id="avgMood">3.4</strong></div>
+                <div style="text-align:right">波动<strong id="moodDelta" style="color:var(--accent)">较上周 +0.3</strong></div>
+              </div>
+              <canvas id="moodChart" width="340" height="160"></canvas>
+            </div>
+
+            <div class="section-head"><h3>最近记录</h3></div>
+            <div class="recent-list" id="recentList"></div>
+          </section>
+
+          <!-- MY DAY -->
+          <section class="tab-panel" data-tab="day" id="panel-day">
+            <div class="page-title">My Day</div>
+            <div class="page-sub" id="todayLabel">今天的关怀时刻</div>
+
+            <div class="predict-banner">
+              <div class="predict-label">今日心情预测</div>
+              <h3 id="predictTitle">偏平静，午后或有轻疲惫</h3>
+              <p id="predictDesc">根据近两周同星期几的习惯推测 · 仅供参考，不是诊断</p>
+            </div>
+
+            <div class="section-head">
+              <h3>关键节点</h3>
+              <button class="btn-soft" id="toggleAddNode">+ 添加节点</button>
+            </div>
+            <div class="add-node-row" id="addNodeForm" style="display:none">
+              <input id="newNodeName" placeholder="节点名称，如午饭后" maxlength="12" />
+              <select id="newNodeTime">
+                <option value="07:30">07:30</option>
+                <option value="12:30">12:30</option>
+                <option value="16:00">16:00</option>
+                <option value="18:30">18:30</option>
+                <option value="21:30">21:30</option>
+                <option value="22:30">22:30</option>
+              </select>
+              <button class="btn-soft" id="confirmAddNode">加入</button>
+            </div>
+            <div class="timeline" id="dayTimeline"></div>
+          </section>
+
+          <!-- INSIGHT -->
+          <section class="tab-panel" data-tab="insight" id="panel-insight">
+            <div class="page-title">洞察</div>
+            <div class="page-sub">看清触发，也看见什么真正帮到你</div>
+
+            <div class="chart-wrap">
+              <div class="section-head" style="margin-top:0">
+                <h3>引起心情变化的因素</h3>
+              </div>
+              <div id="factorBars"></div>
+            </div>
+
+            <div class="chart-wrap">
+              <div class="section-head" style="margin-top:0">
+                <h3>调节方案是否有缓解</h3>
+              </div>
+              <div id="effectList"></div>
+            </div>
+
+            <div class="chart-wrap">
+              <h3 style="font-size:15px;margin-bottom:8px">本周小结</h3>
+              <p style="font-size:13px;color:var(--ink-soft);line-height:1.6" id="weekSummary">
+                「工作」是本周最常见触发；「4-7-8 呼吸」对你缓解率最高。晚上 21 点后强度偏高，可把放松节点提前一点。
+              </p>
+            </div>
+          </section>
+
+          <!-- LIBRARY -->
+          <section class="tab-panel" data-tab="library" id="panel-library">
+            <div class="page-title">活动库</div>
+            <div class="page-sub">自己挑一个，马上开始</div>
+
+            <div class="filter-row" id="activityFilters"></div>
+            <div class="activity-list" id="activityList"></div>
+          </section>
+        </div>
+
+        <nav class="tab-bar">
+          <button class="tab-btn active" data-tab="home"><span class="ico">⌂</span><span class="lbl">首页</span></button>
+          <button class="tab-btn" data-tab="day"><span class="ico">◎</span><span class="lbl">My Day</span></button>
+          <button class="tab-btn" data-tab="insight"><span class="ico">◇</span><span class="lbl">洞察</span></button>
+          <button class="tab-btn" data-tab="library"><span class="ico">✎</span><span class="lbl">活动库</span></button>
+        </nav>
+
+        <div class="overlay" id="overlay"></div>
+        <div class="sheet" id="recordSheet">
+          <div class="sheet-handle"></div>
+          <h3>记录此刻</h3>
+          <div class="field-label">选择情绪</div>
+          <div class="emo-grid" id="emoGrid"></div>
+          <div class="field-label">强度 <span id="intensityVal">3</span>/5</div>
+          <div class="range-row">
+            <span style="font-size:12px;color:var(--ink-soft)">轻</span>
+            <input type="range" min="1" max="5" value="3" id="intensity" />
+            <span style="font-size:12px;color:var(--ink-soft)">强</span>
+          </div>
+          <div class="field-label">触发因素（可多选）</div>
+          <div class="trigger-wrap" id="triggerWrap"></div>
+          <div class="field-label">一句话（可选）</div>
+          <textarea class="note-input" id="noteInput" placeholder="发生了什么，或身体有什么感觉…"></textarea>
+          <div class="sheet-actions">
+            <button class="btn-ghost" id="cancelRecord" style="flex:0.6">取消</button>
+            <button class="btn-primary" id="saveRecord" style="margin-top:0;flex:1;width:100%">保存</button>
+          </div>
+        </div>
+
+        <div class="session-overlay" id="sessionOverlay">
+          <div style="font-size:13px;opacity:0.7" id="sessionType">呼吸练习</div>
+          <div class="breath-circle"><span id="sessionTimer">03:00</span></div>
+          <h3 style="font-family:'Noto Serif SC',serif;font-size:22px" id="sessionTitle">4-7-8 呼吸</h3>
+          <p style="font-size:13px;opacity:0.75;margin-top:8px;line-height:1.5;max-width:260px" id="sessionHint">吸气 4 · 屏息 7 · 呼气 8，跟着节奏慢慢来</p>
+          <div class="feedback-row" id="sessionControls">
+            <button class="btn-primary" id="finishEarly" style="background:#e8f3ef">提前结束并反馈</button>
+            <button class="btn-ghost" id="skipSession" style="color:#e8f3ef;border-color:rgba(255,255,255,0.25)">跳过</button>
+          </div>
+          <div class="feedback-row" id="feedbackControls" style="display:none">
+            <p style="width:100%;margin-bottom:4px;font-size:14px">感觉好一点了吗？</p>
+            <button class="btn-primary" data-fb="better" style="background:#e8f3ef">更好了</button>
+            <button class="btn-ghost" data-fb="same" style="color:#e8f3ef;border-color:rgba(255,255,255,0.25)">差不多</button>
+            <button class="btn-ghost" data-fb="worse" style="color:#e8f3ef;border-color:rgba(255,255,255,0.25)">更差</button>
+          </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+        <!-- 心理医生对话（仅样式壳，未接真实 Agent） -->
+        <div class="doc-panel" id="docPanel" aria-hidden="true">
+          <div class="doc-panel-head">
+            <div class="avatar">🧑‍⚕️</div>
+            <div class="meta">
+              <b>林医生 · 心理支持</b>
+              <span class="doc-online">在线 · 倾听与陪伴</span>
+            </div>
+            <button type="button" class="mini-close" id="docClose" aria-label="关闭">×</button>
+          </div>
+          <div class="doc-disclaimer">演示界面 · 不替代专业心理咨询或医疗建议</div>
+          <div class="doc-messages" id="docMessages">
+            <div class="doc-bubble bot">
+              <span class="who">林医生</span>
+              你好，我是澄时的心理支持顾问。你可以聊聊最近让你不安的事，我会认真听。
+            </div>
+            <div class="doc-bubble bot">
+              <span class="who">林医生</span>
+              今天想从哪里开始？也可以点下面的快捷话题。
+            </div>
+          </div>
+          <div class="doc-quick" id="docQuick">
+            <button type="button" data-q="最近总是焦虑，睡不好">最近很焦虑</button>
+            <button type="button" data-q="工作和学业压力太大了">压力很大</button>
+            <button type="button" data-q="想聊聊人际里的委屈">人际困扰</button>
+          </div>
+          <div class="doc-input-row">
+            <input id="docInput" type="text" placeholder="说说此刻的感受…" maxlength="200" />
+            <button type="button" id="docSend" aria-label="发送">↑</button>
+          </div>
+        </div>
+        <button type="button" class="doc-fab" id="docFab" aria-label="打开心理医生对话">
+          <span class="pulse"></span>
+          <span class="doc-badge"></span>
+          <span class="doc-fab-avatar">🧑‍⚕️</span>
+          <span class="doc-fab-close">×</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EMOTIONS = [
+      { id: "calm", name: "平静", emoji: "🌿", color: "#5b8fbf" },
+      { id: "joy", name: "开心", emoji: "☀️", color: "#d4a017" },
+      { id: "anxious", name: "焦虑", emoji: "🌊", color: "#4a7c9b" },
+      { id: "tired", name: "疲惫", emoji: "🌙", color: "#7a8aa0" },
+      { id: "angry", name: "烦躁", emoji: "🔥", color: "#c4785a" },
+      { id: "low", name: "低落", emoji: "🌧", color: "#6b7c8f" },
+    ];
+    const TRIGGERS = ["学业", "工作", "人际", "家庭", "睡眠", "健康", "金钱", "其他"];
+    const ACTIVITIES = [
+      { id: "a1", cat: "呼吸", icon: "🌬️", title: "4-7-8 呼吸", desc: "3 分钟冷静下来，适合焦虑与烦躁。", mins: 3, hint: "吸气 4 · 屏息 7 · 呼气 8" },
+      { id: "a2", cat: "冥想", icon: "🧘", title: "身体扫描", desc: "从脚到头轻轻觉察，适合晚上放松。", mins: 5, hint: "留意身体各处的感受，不评判" },
+      { id: "a3", cat: "音乐", icon: "🎵", title: "午后轻音乐", desc: "节奏舒缓的钢琴与环境声。", mins: 8, hint: "戴上耳机，让注意力跟着旋律走" },
+      { id: "a4", cat: "音乐", icon: "🎧", title: "助眠白噪音", desc: "雨声与海浪，帮助入睡前卸下紧绷。", mins: 10, hint: "调低音量，闭上眼睛即可" },
+      { id: "a5", cat: "运动", icon: "🚶", title: "出门走 800 步", desc: "换个空间，让思绪流动起来。", mins: 10, hint: "不必快，呼吸与步伐同步" },
+      { id: "a6", cat: "运动", icon: "🙆", title: "肩颈拉伸", desc: "适合久坐后的下午 4 点。", mins: 4, hint: "缓慢转肩，感受两侧拉伸" },
+      { id: "a7", cat: "书写", icon: "✍️", title: "未发送信件", desc: "把想说的写下来，不必发出去。", mins: 6, hint: "写完可以删掉或收进日记" },
+      { id: "a8", cat: "书写", icon: "✨", title: "三件小事", desc: "今天值得记住的三件微小好事。", mins: 3, hint: "越具体越好，哪怕只是一杯热水" },
+    ];
+
+    const state = {
+      tab: "home",
+      range: "week",
+      records: [
+        { emotion: "tired", intensity: 4, triggers: ["工作"], note: "连续开会", time: "今天 11:20" },
+        { emotion: "calm", intensity: 3, triggers: ["睡眠"], note: "", time: "昨天 22:10" },
+        { emotion: "anxious", intensity: 4, triggers: ["学业", "工作"], note: " deadline 临近", time: "昨天 16:05" },
+        { emotion: "joy", intensity: 4, triggers: ["人际"], note: "和朋友聊了会", time: "周一 19:40" },
+      ],
+      selectedEmotion: null,
+      selectedTriggers: [],
+      nodes: [
+        { id: "n1", name: "早起", time: "07:30", activityId: "a1", reason: "清晨常带一点紧绷，先用呼吸落地" },
+        { id: "n2", name: "工作下午", time: "16:00", activityId: "a6", reason: "这个时段你常感疲惫" },
+        { id: "n3", name: "晚上", time: "21:30", activityId: "a4", reason: "帮你把白天收一收" },
+      ],
+      effects: {
+        a1: { better: 8, same: 2, worse: 0 },
+        a3: { better: 5, same: 3, worse: 1 },
+        a6: { better: 6, same: 2, worse: 0 },
+        a4: { better: 4, same: 4, worse: 1 },
+        a5: { better: 3, same: 2, worse: 0 },
+      },
+      activityFilter: "全部",
+      session: null,
+      timerId: null,
+    };
+
+    const weekData = [2.8, 3.2, 2.5, 3.6, 3.1, 4.0, 3.4];
+    const monthData = [3.1, 2.9, 3.4, 2.7, 3.8, 3.2, 2.6, 3.5, 3.0, 3.7, 2.8, 3.3, 3.9, 3.1];
+
+    function $(sel, root = document) { return root.querySelector(sel); }
+    function $all(sel, root = document) { return [...root.querySelectorAll(sel)]; }
+
+    function toast(msg) {
+      const el = $("#toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    function emotionById(id) {
+      return EMOTIONS.find(e => e.id === id) || EMOTIONS[0];
+    }
+    function activityById(id) {
+      return ACTIVITIES.find(a => a.id === id);
+    }
+
+    /* Tabs */
+    $all(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.tab = btn.dataset.tab;
+        $all(".tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+        $all(".tab-panel").forEach(p => p.classList.toggle("active", p.dataset.tab === state.tab));
+        if (state.tab === "insight") animateBars();
+      });
+    });
+
+    /* Chart */
+    function drawChart() {
+      const canvas = $("#moodChart");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      const data = state.range === "week" ? weekData : monthData;
+      const pad = { l: 8, r: 8, t: 16, b: 24 };
+      const min = 1, max = 5;
+      const xs = data.map((_, i) => pad.l + (i * (w - pad.l - pad.r)) / Math.max(data.length - 1, 1));
+      const ys = data.map(v => pad.t + ((max - v) / (max - min)) * (h - pad.t - pad.b));
+
+      // grid
+      ctx.strokeStyle = "rgba(20,36,34,0.06)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i++) {
+        const y = pad.t + (i / 3) * (h - pad.t - pad.b);
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+      }
+
+      // area
+      const grad = ctx.createLinearGradient(0, pad.t, 0, h - pad.b);
+      grad.addColorStop(0, "rgba(47,122,109,0.28)");
+      grad.addColorStop(1, "rgba(47,122,109,0)");
+      ctx.beginPath();
+      ctx.moveTo(xs[0], h - pad.b);
+      data.forEach((_, i) => ctx.lineTo(xs[i], ys[i]));
+      ctx.lineTo(xs[xs.length - 1], h - pad.b);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // line
+      ctx.beginPath();
+      data.forEach((v, i) => i === 0 ? ctx.moveTo(xs[i], ys[i]) : ctx.lineTo(xs[i], ys[i]));
+      ctx.strokeStyle = "#2f7a6d";
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      // dots
+      data.forEach((_, i) => {
+        ctx.beginPath();
+        ctx.arc(xs[i], ys[i], 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        ctx.strokeStyle = "#2f7a6d";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      // labels
+      ctx.fillStyle = "rgba(74,99,94,0.85)";
+      ctx.font = "11px 'Noto Sans SC', sans-serif";
+      ctx.textAlign = "center";
+      if (state.range === "week") {
+        ["一","二","三","四","五","六","日"].forEach((lab, i) => ctx.fillText(lab, xs[i], h - 6));
+      } else {
+        data.forEach((_, i) => { if (i % 3 === 0) ctx.fillText(`${i + 1}日`, xs[i], h - 6); });
+      }
+
+      const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(1);
+      $("#avgMood").textContent = avg;
+      $("#moodDelta").textContent = state.range === "week" ? "较上周 +0.3" : "较上月持平";
+    }
+
+    $all("[data-range]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.range = btn.dataset.range;
+        $all("[data-range]").forEach(b => b.classList.toggle("active", b === btn));
+        drawChart();
+      });
+    });
+
+    /* Recent list */
+    function renderRecent() {
+      const list = $("#recentList");
+      list.innerHTML = state.records.slice(0, 5).map(r => {
+        const e = emotionById(r.emotion);
+        const dots = [1,2,3,4,5].map(i => `<i class="${i <= r.intensity ? "on" : ""}"></i>`).join("");
+        return `<div class="mood-item">
+          <div class="mood-emoji" style="background:${e.color}22">${e.emoji}</div>
+          <div class="info">
+            <b>${e.name} · ${r.triggers.join(" / ") || "无触发"}</b>
+            <span>${r.time}${r.note ? " · " + r.note : ""}</span>
+          </div>
+          <div class="intensity-dots">${dots}</div>
+        </div>`;
+      }).join("");
+    }
+
+    /* Record sheet */
+    function openSheet() {
+      $("#overlay").classList.add("show");
+      $("#recordSheet").classList.add("show");
+    }
+    function closeSheet() {
+      $("#overlay").classList.remove("show");
+      $("#recordSheet").classList.remove("show");
+    }
+    $("#openRecord").addEventListener("click", openSheet);
+    $("#cancelRecord").addEventListener("click", closeSheet);
+    $("#overlay").addEventListener("click", closeSheet);
+
+    function renderEmoGrid() {
+      $("#emoGrid").innerHTML = EMOTIONS.map(e => `
+        <button type="button" class="emo-btn ${state.selectedEmotion === e.id ? "selected" : ""}" data-emo="${e.id}">
+          <span class="e">${e.emoji}</span><span class="n">${e.name}</span>
+        </button>`).join("");
+      $all("#emoGrid .emo-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.selectedEmotion = btn.dataset.emo;
+          renderEmoGrid();
+        });
+      });
+    }
+    function renderTriggers() {
+      $("#triggerWrap").innerHTML = TRIGGERS.map(t => `
+        <button type="button" class="trigger-chip ${state.selectedTriggers.includes(t) ? "on" : ""}" data-t="${t}">${t}</button>
+      `).join("");
+      $all("#triggerWrap .trigger-chip").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const t = btn.dataset.t;
+          if (state.selectedTriggers.includes(t)) {
+            state.selectedTriggers = state.selectedTriggers.filter(x => x !== t);
+          } else {
+            state.selectedTriggers.push(t);
+          }
+          renderTriggers();
+        });
+      });
+    }
+    $("#intensity").addEventListener("input", e => {
+      $("#intensityVal").textContent = e.target.value;
+    });
+    $("#saveRecord").addEventListener("click", () => {
+      if (!state.selectedEmotion) {
+        toast("请先选择一种情绪");
+        return;
+      }
+      const e = emotionById(state.selectedEmotion);
+      const now = new Date();
+      const time = `今天 ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+      state.records.unshift({
+        emotion: state.selectedEmotion,
+        intensity: Number($("#intensity").value),
+        triggers: [...state.selectedTriggers],
+        note: $("#noteInput").value.trim(),
+        time,
+      });
+      // bump week chart last point toward new intensity
+      weekData[weekData.length - 1] = Math.min(5, Math.max(1,
+        (weekData[weekData.length - 1] * 0.6 + Number($("#intensity").value) * 0.4)
+      ));
+      state.selectedEmotion = null;
+      state.selectedTriggers = [];
+      $("#noteInput").value = "";
+      $("#intensity").value = 3;
+      $("#intensityVal").textContent = "3";
+      closeSheet();
+      renderRecent();
+      renderEmoGrid();
+      renderTriggers();
+      drawChart();
+      updatePredict();
+      renderFactors();
+      toast(`已记下「${e.name}」，去 My Day 看看今日安排？`);
+    });
+
+    /* My Day */
+    function updatePredict() {
+      const last = state.records[0];
+      const e = emotionById(last.emotion);
+      const map = {
+        anxious: { title: "偏焦虑，下午需留白", desc: "近期「工作/学业」触发较多 · 下午 4 点已为你安排拉伸" },
+        tired: { title: "偏疲惫，注意补一点点能量", desc: "根据近两周习惯推测 · 建议用短音乐或走动换气" },
+        low: { title: "情绪偏低，对自己温柔一点", desc: "不是诊断，只是提醒 · 可从「三件小事」开始" },
+        angry: { title: "易烦躁，先降速再处理事", desc: "关键节点已优先推送呼吸类活动" },
+        joy: { title: "整体偏明朗，保持节律", desc: "开心也可以记录 · 晚上用白噪音好好收尾" },
+        calm: { title: "偏平静，午后或有轻疲惫", desc: "根据近两周同星期几的习惯推测 · 仅供参考" },
+      };
+      const p = map[e.id] || map.calm;
+      $("#predictTitle").textContent = p.title;
+      $("#predictDesc").textContent = p.desc;
+    }
+
+    function pickActivityForNode(nodeName) {
+      if (nodeName.includes("早") || nodeName.includes("起")) return "a1";
+      if (nodeName.includes("4") || nodeName.includes("午") || nodeName.includes("工作")) return "a6";
+      if (nodeName.includes("晚") || nodeName.includes("睡")) return "a4";
+      if (nodeName.includes("饭") || nodeName.includes("餐")) return "a3";
+      return "a5";
+    }
+
+    function renderDay() {
+      const today = new Date();
+      const days = ["日","一","二","三","四","五","六"];
+      $("#todayLabel").textContent = `周${days[today.getDay()]} · ${today.getMonth()+1}/${today.getDate()} 的关怀时刻`;
+
+      $("#dayTimeline").innerHTML = state.nodes
+        .slice()
+        .sort((a, b) => a.time.localeCompare(b.time))
+        .map(node => {
+          const act = activityById(node.activityId);
+          return `<div class="node-card">
+            <div class="dot"></div>
+            <div class="node-inner">
+              <div class="node-top">
+                <div>
+                  <b>${node.name}</b>
+                  <div class="time">${node.time}</div>
+                </div>
+                <button class="btn-danger-soft" data-del="${node.id}">− 移除</button>
+              </div>
+              <div class="rec-chip">${act.icon} ${act.title} · ${act.mins} 分钟</div>
+              <p style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;line-height:1.45">${node.reason}</p>
+              <div class="node-actions">
+                <button class="btn-soft" data-start="${act.id}">开始</button>
+                <button class="btn-ghost" data-swap="${node.id}">换成别的</button>
+              </div>
+            </div>
+          </div>`;
+        }).join("");
+
+      $all("[data-del]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (state.nodes.length <= 1) {
+            toast("至少保留一个节点哦");
+            return;
+          }
+          state.nodes = state.nodes.filter(n => n.id !== btn.dataset.del);
+          renderDay();
+          toast("已移除该节点");
+        });
+      });
+      $all("[data-start]").forEach(btn => {
+        btn.addEventListener("click", () => startSession(btn.dataset.start));
+      });
+      $all("[data-swap]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const node = state.nodes.find(n => n.id === btn.dataset.swap);
+          const pool = ACTIVITIES.map(a => a.id).filter(id => id !== node.activityId);
+          node.activityId = pool[Math.floor(Math.random() * pool.length)];
+          const act = activityById(node.activityId);
+          node.reason = `已换成「${act.title}」，试试适不适合你`;
+          renderDay();
+          toast(`已换成：${act.title}`);
+        });
+      });
+    }
+
+    $("#toggleAddNode").addEventListener("click", () => {
+      const form = $("#addNodeForm");
+      form.style.display = form.style.display === "none" ? "flex" : "none";
+    });
+    $("#confirmAddNode").addEventListener("click", () => {
+      const name = $("#newNodeName").value.trim() || "自定义节点";
+      const time = $("#newNodeTime").value;
+      const activityId = pickActivityForNode(name);
+      state.nodes.push({
+        id: "n" + Date.now(),
+        name,
+        time,
+        activityId,
+        reason: "你新增的关怀节点，内容可随时更换",
+      });
+      $("#newNodeName").value = "";
+      $("#addNodeForm").style.display = "none";
+      renderDay();
+      toast(`已添加「${name}」`);
+    });
+
+    /* Insight */
+    function renderFactors() {
+      const counts = {};
+      TRIGGERS.forEach(t => counts[t] = 0);
+      state.records.forEach(r => r.triggers.forEach(t => { counts[t] = (counts[t] || 0) + 1; }));
+      // seed demo weight
+      const seed = { 工作: 8, 学业: 5, 睡眠: 4, 人际: 3, 家庭: 2, 健康: 2, 金钱: 1, 其他: 1 };
+      Object.keys(seed).forEach(k => { counts[k] = (counts[k] || 0) + seed[k]; });
+      const max = Math.max(...Object.values(counts), 1);
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+      $("#factorBars").innerHTML = sorted.map(([name, n]) => `
+        <div class="factor-row">
+          <div class="name">${name}</div>
+          <div class="bar-track"><div class="bar-fill" data-w="${Math.round(n / max * 100)}"></div></div>
+          <div class="pct">${Math.round(n / max * 100)}%</div>
+        </div>`).join("");
+      requestAnimationFrame(animateBars);
+    }
+    function animateBars() {
+      $all(".bar-fill").forEach(el => {
+        el.style.width = "0";
+        requestAnimationFrame(() => { el.style.width = el.dataset.w + "%"; });
+      });
+    }
+    function renderEffects() {
+      const rows = Object.entries(state.effects).map(([id, s]) => {
+        const act = activityById(id);
+        const total = s.better + s.same + s.worse || 1;
+        const rate = Math.round(s.better / total * 100);
+        let tag = "mid", label = "一般";
+        if (rate >= 65) { tag = "good"; label = `缓解 ${rate}%`; }
+        else if (rate < 45) { tag = "bad"; label = `缓解 ${rate}%`; }
+        else { label = `缓解 ${rate}%`; }
+        return { act, label, tag, rate };
+      }).sort((a, b) => b.rate - a.rate);
+
+      $("#effectList").innerHTML = rows.map(r => `
+        <div class="effect-item">
+          <span>${r.act.icon} ${r.act.title}</span>
+          <span class="effect-tag ${r.tag}">${r.label}</span>
+        </div>`).join("");
+    }
+
+    /* Library */
+    function renderFilters() {
+      const cats = ["全部", ...new Set(ACTIVITIES.map(a => a.cat))];
+      $("#activityFilters").innerHTML = cats.map(c => `
+        <button class="filter-chip ${state.activityFilter === c ? "active" : ""}" data-cat="${c}">${c}</button>
+      `).join("");
+      $all("#activityFilters .filter-chip").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.activityFilter = btn.dataset.cat;
+          renderFilters();
+          renderActivities();
+        });
+      });
+    }
+    function renderActivities() {
+      const list = ACTIVITIES.filter(a => state.activityFilter === "全部" || a.cat === state.activityFilter);
+      $("#activityList").innerHTML = list.map(a => `
+        <div class="activity-card">
+          <div class="activity-icon">${a.icon}</div>
+          <div>
+            <h4>${a.title}</h4>
+            <p>${a.desc} · ${a.mins} 分钟</p>
+            <div class="activity-actions">
+              <button class="btn-soft" data-start="${a.id}">立即开始</button>
+              <button class="btn-ghost" data-add-day="${a.id}">加入今日</button>
+            </div>
+          </div>
+        </div>`).join("");
+      $all("#activityList [data-start]").forEach(btn => {
+        btn.addEventListener("click", () => startSession(btn.dataset.start));
+      });
+      $all("#activityList [data-add-day]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const act = activityById(btn.dataset.addDay);
+          const now = new Date();
+          const time = `${String(now.getHours()).padStart(2,"0")}:${String(Math.ceil(now.getMinutes()/5)*5 % 60).padStart(2,"0")}`;
+          state.nodes.push({
+            id: "n" + Date.now(),
+            name: "临时关怀",
+            time: time === "24:00" ? "23:55" : time,
+            activityId: act.id,
+            reason: "从活动库加入今日 My Day",
+          });
+          toast(`「${act.title}」已加入 My Day`);
+          // switch to day tab
+          $all(".tab-btn").find(b => b.dataset.tab === "day").click();
+          renderDay();
+        });
+      });
+    }
+
+    /* Session */
+    function startSession(activityId) {
+      const act = activityById(activityId);
+      state.session = { activityId, left: Math.min(act.mins, 3) * 60 }; // demo: cap preview at 3 min display but use short timer feel
+      // For demo UX, use 12 second timer representing the session
+      state.session.left = 12;
+      $("#sessionType").textContent = act.cat;
+      $("#sessionTitle").textContent = act.title;
+      $("#sessionHint").textContent = act.hint;
+      $("#sessionControls").style.display = "flex";
+      $("#feedbackControls").style.display = "none";
+      $("#sessionOverlay").classList.add("show");
+      tickSession();
+      clearInterval(state.timerId);
+      state.timerId = setInterval(tickSession, 1000);
+    }
+    function tickSession() {
+      if (!state.session) return;
+      const m = String(Math.floor(state.session.left / 60)).padStart(2, "0");
+      const s = String(state.session.left % 60).padStart(2, "0");
+      $("#sessionTimer").textContent = `${m}:${s}`;
+      if (state.session.left <= 0) {
+        clearInterval(state.timerId);
+        showFeedback();
+        return;
+      }
+      state.session.left -= 1;
+    }
+    function showFeedback() {
+      $("#sessionControls").style.display = "none";
+      $("#feedbackControls").style.display = "flex";
+      $("#sessionHint").textContent = "完成后告诉我：感觉好一点了吗？";
+    }
+    $("#finishEarly").addEventListener("click", () => {
+      clearInterval(state.timerId);
+      showFeedback();
+    });
+    $("#skipSession").addEventListener("click", () => {
+      clearInterval(state.timerId);
+      state.session = null;
+      $("#sessionOverlay").classList.remove("show");
+      toast("已跳过");
+    });
+    $all("#feedbackControls [data-fb]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const fb = btn.dataset.fb;
+        const id = state.session.activityId;
+        if (!state.effects[id]) state.effects[id] = { better: 0, same: 0, worse: 0 };
+        if (fb === "better") state.effects[id].better += 1;
+        if (fb === "same") state.effects[id].same += 1;
+        if (fb === "worse") state.effects[id].worse += 1;
+        renderEffects();
+        state.session = null;
+        $("#sessionOverlay").classList.remove("show");
+        const msg = fb === "better" ? "很好，已记入洞察" : fb === "same" ? "已记录，下次试试别的" : "抱歉，已减少这类推荐权重";
+        toast(msg);
+      });
+    });
+
+    /* Psychologist chat UI shell (no real agent) */
+    function toggleDoc(force) {
+      const panel = $("#docPanel");
+      const fab = $("#docFab");
+      const open = typeof force === "boolean" ? force : !panel.classList.contains("open");
+      panel.classList.toggle("open", open);
+      fab.classList.toggle("open", open);
+      panel.setAttribute("aria-hidden", open ? "false" : "true");
+      if (open) $("#docInput").focus();
+    }
+    function appendDocBubble(text, who) {
+      const wrap = $("#docMessages");
+      const div = document.createElement("div");
+      div.className = `doc-bubble ${who}`;
+      div.innerHTML = who === "bot"
+        ? `<span class="who">林医生</span>${text}`
+        : text;
+      wrap.appendChild(div);
+      wrap.scrollTop = wrap.scrollHeight;
+    }
+    function sendDocMessage(text) {
+      const msg = (text || "").trim();
+      if (!msg) return;
+      appendDocBubble(msg, "user");
+      $("#docInput").value = "";
+      // 样式演示：固定占位回复，不调用真实 Agent
+      setTimeout(() => {
+        appendDocBubble("我听到了。这里先放一个占位回复——正式版会接入对话能力。你愿意多说一点发生了什么吗？", "bot");
+      }, 450);
+    }
+    $("#docFab").addEventListener("click", () => toggleDoc());
+    $("#docClose").addEventListener("click", () => toggleDoc(false));
+    $("#docSend").addEventListener("click", () => sendDocMessage($("#docInput").value));
+    $("#docInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") sendDocMessage($("#docInput").value);
+    });
+    $all("#docQuick [data-q]").forEach(btn => {
+      btn.addEventListener("click", () => sendDocMessage(btn.dataset.q));
+    });
+
+    /* Clock */
+    function updateClock() {
+      const n = new Date();
+      $("#clock").textContent = `${n.getHours()}:${String(n.getMinutes()).padStart(2,"0")}`;
+    }
+
+    /* Init */
+    renderEmoGrid();
+    renderTriggers();
+    renderRecent();
+    renderDay();
+    renderFactors();
+    renderEffects();
+    renderFilters();
+    renderActivities();
+    updatePredict();
+    updateClock();
+    setInterval(updateClock, 30000);
+    drawChart();
+    window.addEventListener("resize", drawChart);
+  </script>
+</body>
+</html>
